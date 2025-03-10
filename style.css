@@ -1,0 +1,83 @@
+* {
+    margin: 0;
+    padding: 0;
+    font-family: "Ariel", sans-serif;
+    box-sizing: border-box;
+}
+
+body {
+    background: #222;
+    color: white;
+}
+
+button:hover {
+    cursor: pointer;
+}
+
+.kanban-table {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    width: 90%;
+    max-width: 1000px;
+    background: #1e5f4e;
+    color: #fff;
+    margin: 100px auto 0;
+    border-radius: 20px;
+    padding: 40px 35px;
+    text-align: center;
+}
+
+.kanban-column {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 2px 4px 15px rgba(0, 0, 0, 0.25);
+}
+
+.add-button {
+    background-color: #105e4a;
+    border: 0px;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 5px;
+    width: 90%;
+    color: white;
+    font-size: 20px;
+}
+
+.task {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.2);
+    user-select: none;
+}
+
+.task p {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    hyphens: auto;
+    max-width: 90%;
+}
+
+.edit-task-btn,
+.delete-task-btn {
+    outline: none;
+    border: 0;
+    text-align: center;
+    background: rgba(0, 0, 0, 0);
+    color: rgb(176, 64, 64);
+    font-size: 20px;
+}
+
+.edit-task-btn {
+    transform: rotate(135deg);
+}
