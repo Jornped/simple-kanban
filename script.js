@@ -111,6 +111,19 @@ function createTaskElement(task) {
     deleteButton.classList.add("delete-task-btn");
     deleteButton.textContent = "X";
 
+    deleteButton.addEventListener("click", () => {
+        const parentColumn = deleteButton.parentElement.parentElement;
+        const columnType = parentColumn.dataset.category;
+        const indexOfTask = taskList[columnType].findIndex(t => t.id === task.id);
+
+
+        if (indexOfTask > -1) {
+            taskList[columnType].splice(indexOfTask, 1);
+        }
+        deleteButton.parentElement.remove();
+        saveData();
+    });
+
     taskElement.appendChild(taskText);
     taskElement.appendChild(editButton);
     taskElement.appendChild(deleteButton);
