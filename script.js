@@ -97,6 +97,7 @@ function renderTasks(tasks) {
 
 
 function createTaskElement(task) {
+
     const taskElement = document.createElement("div");
     taskElement.classList.add("task");
 
@@ -111,9 +112,11 @@ function createTaskElement(task) {
     deleteButton.classList.add("delete-task-btn");
     deleteButton.textContent = "X";
 
+
     deleteButton.addEventListener("click", () => {
         const parentColumn = deleteButton.parentElement.parentElement;
         const columnType = parentColumn.dataset.category;
+
         const indexOfTask = taskList[columnType].findIndex(t => t.id === task.id);
 
 
@@ -122,6 +125,37 @@ function createTaskElement(task) {
         }
         deleteButton.parentElement.remove();
         saveData();
+    });
+
+    editButton.addEventListener("click", () => {
+        taskText.contentEditable = true;
+        taskText.focus();
+    });
+
+    taskText.addEventListener("blur", () => {
+        taskText.contentEditable = false;
+        const newText = taskText.textContent.trim();
+
+        if (!newText) {
+            taskText.textContent = task.text; // Возвращаем старый текст
+            return;
+        }
+
+        const parentColumn = deleteButton.parentElement.parentElement;
+        const columnType = parentColumn.dataset.category;
+        const indexOfTask = taskList[columnType].findIndex(t => t.id === task.id);
+
+        if (indexOfTask > -1) {
+            taskList[columnType][indexOfTask].text = newText;
+            saveData();
+        }
+    });
+
+    taskText.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            taskText.blur();
+        }
     });
 
     taskElement.appendChild(taskText);
