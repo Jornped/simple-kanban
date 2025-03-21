@@ -19,8 +19,6 @@ let taskList = {
     ],
 }
 
-
-
 addButtonsList.forEach(button => {
     button.addEventListener("click", () => {
         addTaskWindow.style.display = "flex";
@@ -66,7 +64,6 @@ saveTaskButton.addEventListener("click", () => {
     parent = null;
 });
 
-
 addEventListener("DOMContentLoaded", () => {
     id = +localStorage.getItem("id") || 0;
     taskList = JSON.parse(localStorage.getItem("tasks")) || {
@@ -81,7 +78,6 @@ addEventListener("DOMContentLoaded", () => {
 
 });
 
-
 function saveData() {
     localStorage.setItem("tasks", JSON.stringify(taskList));
     localStorage.setItem("id", id);
@@ -95,62 +91,17 @@ function renderTasks(tasks) {
     return fragment;
 }
 
-
 function createTaskElement(task) {
-
     const taskElement = document.createElement("div");
     taskElement.classList.add("task");
 
     const taskText = document.createElement("p");
     taskText.textContent = task.text;
 
-    const editButton = document.createElement("button");
-    editButton.classList.add("edit-task-btn");
-    editButton.innerHTML = "&#9999"; // Карандаш
+    const editButton = createButton("edit-task-btn", "&#9999", () => handleEditTask(taskText));
+    const deleteButton = createButton("delete-task-btn", "X", () => handleDeleteTask(task, taskElement));
 
-    const deleteButton = document.createElement("button");
-    deleteButton.classList.add("delete-task-btn");
-    deleteButton.textContent = "X";
-
-
-    deleteButton.addEventListener("click", () => {
-        const parentColumn = deleteButton.parentElement.parentElement;
-        const columnType = parentColumn.dataset.category;
-
-        const indexOfTask = taskList[columnType].findIndex(t => t.id === task.id);
-
-
-        if (indexOfTask > -1) {
-            taskList[columnType].splice(indexOfTask, 1);
-        }
-        deleteButton.parentElement.remove();
-        saveData();
-    });
-
-    editButton.addEventListener("click", () => {
-        taskText.contentEditable = true;
-        taskText.focus();
-    });
-
-    taskText.addEventListener("blur", () => {
-        taskText.contentEditable = false;
-        const newText = taskText.textContent.trim();
-
-        if (!newText) {
-            taskText.textContent = task.text; // Возвращаем старый текст
-            return;
-        }
-
-        const parentColumn = deleteButton.parentElement.parentElement;
-        const columnType = parentColumn.dataset.category;
-        const indexOfTask = taskList[columnType].findIndex(t => t.id === task.id);
-
-        if (indexOfTask > -1) {
-            taskList[columnType][indexOfTask].text = newText;
-            saveData();
-        }
-    });
-
+    taskText.addEventListener("blur", () => handleUpdateTask(task, taskText));
     taskText.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
             event.preventDefault();
@@ -158,9 +109,50 @@ function createTaskElement(task) {
         }
     });
 
-    taskElement.appendChild(taskText);
-    taskElement.appendChild(editButton);
-    taskElement.appendChild(deleteButton);
-
+    taskElement.append(taskText, editButton, deleteButton);
     return taskElement;
+}
+
+function createButton(className, text, onClick) {
+    const button = document.createElement("button");
+    button.classList.add(className);
+    button.innerHTML = text;
+    button.addEventListener("click", onClick);
+    return button;
+}
+
+function handleDeleteTask(task, taskElement) {
+    const parentColumn = taskElement.parentElement;
+    const columnType = parentColumn.dataset.category;
+    const index = taskList[columnType].findIndex(t => t.id === task.id);
+
+    if (index > -1) {
+        taskList[columnType].splice(index, 1);
+        saveData();
+    }
+    taskElement.remove();
+}
+
+function handleEditTask(taskText) {
+    taskText.contentEditable = true;
+    taskText.focus();
+}
+
+function handleUpdateTask(task, taskText) {
+    taskText.contentEditable = false;
+    const newText = taskText.textContent.trim();
+
+    if (!newText) {
+        taskText.textContent = task.text;
+        return;
+    }
+
+    const parentColumn = taskText.parentElement.parentElement;
+    const columnType = parentColumn.dataset.category;
+    const index = taskList[columnType].findIndex(t => t.id === task.id);
+
+    if (index > -1) {
+        taskList[columnType][index].text = newText;
+        saveData();
+    }
 }
