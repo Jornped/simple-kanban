@@ -97,6 +97,11 @@ body {
     transform: scale(1.2);
 }
 
+.task.dragging {
+    transform: none !important;
+}
+
+
 .modal-overlay {
     position: fixed;
     top: 0;

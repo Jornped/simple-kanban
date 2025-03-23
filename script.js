@@ -47,15 +47,15 @@ saveTaskButton.addEventListener("click", () => {
 
         return;
     }
-
-    taskList[category].push({
-        "id": ++id,
-        "text": taskText,
-    });
+    const taskObj = {
+        id: ++id,
+        text: taskText
+    };
+    taskList[category].push(taskObj);
 
     saveData();
 
-    const newTask = createTaskElement({ text: taskText });
+    const newTask = createTaskElement(taskObj);
     parent.appendChild(newTask);
 
     addTaskWindow.style.display = "none";
@@ -110,6 +110,8 @@ function createTaskElement(task) {
     });
 
     taskElement.append(taskText, editButton, deleteButton);
+
+    dragNDropTask(task, taskElement);
     return taskElement;
 }
 
@@ -155,4 +157,116 @@ function handleUpdateTask(task, taskText) {
         taskList[columnType][index].text = newText;
         saveData();
     }
+}
+
+
+function dragNDropTask(task, taskElement) {
+    let isDragging = false;
+
+    let startX;
+    let startY;
+
+    let startElemPosX;
+    let startElemPosY;
+
+    let currentElemPosX;
+    let currentElemPosY;
+
+    taskElement.addEventListener("mousedown", (event) => {
+        if (event.target.closest("button"))
+            return;
+        taskElement.classList.add("dragging");
+
+        const rect = taskElement.getBoundingClientRect();
+        taskElement.style.width = `${rect.width}px`;
+        taskElement.style.height = `${rect.height}px`;
+
+        taskElement.style.position = "absolute";
+        taskElement.style.zIndex = 1000;
+
+        startX = event.clientX;
+        startY = event.clientY;
+
+        startElemPosX = rect.left;
+        startElemPosY = rect.top;
+
+        currentElemPosX = startElemPosX;
+        currentElemPosY = startElemPosY;
+
+        taskElement.style.left = `${startElemPosX}px`;
+        taskElement.style.top = `${startElemPosY}px`;
+
+        isDragging = true;
+    });
+
+    taskElement.addEventListener("mousemove", (event) => {
+        if (!isDragging)
+            return
+        let offsetX = event.clientX - startX;
+        let offsetY = event.clientY - startY;
+
+        let taskTop = parseInt(taskElement.style.top, 10);
+        let taskLeft = parseInt(taskElement.style.left, 10);
+
+        taskTop += offsetY;
+        taskLeft += offsetX;
+
+        currentElemPosX = taskLeft;
+        currentElemPosY = taskTop;
+
+        taskElement.style.left = `${taskLeft}px`;
+        taskElement.style.top = `${taskTop}px`;
+
+        startX = event.clientX;
+        startY = event.clientY;
+
+    });
+
+    taskElement.addEventListener("mouseup", (event) => {
+        if (event.target.closest("button"))
+            return;
+        isDragging = false;
+        taskElement.classList.remove("dragging");
+
+        const columns = document.querySelectorAll(".kanban-column");
+        const rectTask = taskElement.getBoundingClientRect();
+        const taskMidX = currentElemPosX + rectTask.width / 2;
+        const taskMidY = currentElemPosY + rectTask.height / 2;
+
+        columns.forEach(column => {
+            const rectCol = column.getBoundingClientRect();
+            const xStart = rectCol.x;
+            const yStart = rectCol.y;
+            const xEnd = rectCol.x + rectCol.width;
+            const yEnd = rectCol.y + rectCol.height;
+
+            if (taskMidX > xStart && taskMidX <= xEnd &&
+                taskMidY > yStart && taskMidY <= yEnd) {
+
+                isChanged = true;
+                column.appendChild(taskElement);
+                columns.forEach(cols => {
+                    const columnType = cols.dataset.category;
+                    const index = taskList[columnType].findIndex(t => t.id === task.id);
+                    if (index > -1) {
+                        taskList[columnType].splice(index, 1);
+                    }
+                });
+                const category = column.dataset.category;
+                taskList[category].push({
+                    "id": task.id,
+                    "text": task.text,
+                });
+                saveData();
+            }
+        });
+
+        taskElement.style.position = "";
+        taskElement.style.zIndex = "";
+        taskElement.style.left = "";
+        taskElement.style.top = "";
+        taskElement.style.width = "";
+        taskElement.style.height = "";
+
+    });
 }
