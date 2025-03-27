@@ -10,6 +10,9 @@ let id = 0;
 let currentDrag = null;
 let isDragging = false;
 
+const placeholder = document.createElement("div");
+placeholder.classList.add("task", "placeholder");
+
 let taskList = {
     "Not Started": [
 
@@ -199,11 +202,17 @@ function dragNDropTask(task, taskElement) {
 document.addEventListener("mousemove", (event) => {
     if (!isDragging)
         return
-    let offsetX = event.clientX - currentDrag.startX;
-    let offsetY = event.clientY - currentDrag.startY;
+    const {
+        startX,
+        startY,
+        taskElement
+    } = currentDrag;
 
-    let taskTop = parseInt(currentDrag.taskElement.style.top, 10);
-    let taskLeft = parseInt(currentDrag.taskElement.style.left, 10);
+    const offsetX = event.clientX - startX;
+    const offsetY = event.clientY - startY;
+
+    let taskTop = parseInt(taskElement.style.top, 10);
+    let taskLeft = parseInt(taskElement.style.left, 10);
 
     taskTop += offsetY;
     taskLeft += offsetX;
@@ -211,60 +220,103 @@ document.addEventListener("mousemove", (event) => {
     currentDrag.currentElemPosX = taskLeft;
     currentDrag.currentElemPosY = taskTop;
 
-    currentDrag.taskElement.style.left = `${taskLeft}px`;
-    currentDrag.taskElement.style.top = `${taskTop}px`;
+    taskElement.style.left = `${taskLeft}px`;
+    taskElement.style.top = `${taskTop}px`;
 
     currentDrag.startX = event.clientX;
     currentDrag.startY = event.clientY;
+
+    const rect = taskElement.getBoundingClientRect();
+    const midX = currentDrag.currentElemPosX + rect.width / 2;
+    const midY = currentDrag.currentElemPosY + rect.height / 2;
+
+    const targetColumn = getColumnAtPosition(midX, midY);
+
+    if (targetColumn) {
+        const index = getTaskIndexAtPosition(midY, targetColumn);
+
+        if (index === null) {
+            targetColumn.appendChild(placeholder);
+        } else {
+            const tasks = targetColumn.querySelectorAll(".task:not(.dragging):not(.placeholder)");
+            targetColumn.insertBefore(placeholder, tasks[index]);
+        }
+
+    }
 
 });
 
 document.addEventListener("mouseup", (event) => {
     if (event.target.closest("button"))
         return;
-    if (!isDragging)
-        return
+    if (!isDragging || !currentDrag)
+        return;
+
     isDragging = false;
-    currentDrag.taskElement.classList.remove("dragging");
+    const { task, taskElement, currentElemPosX, currentElemPosY } = currentDrag;
+    taskElement.classList.remove("dragging");
+    const rect = taskElement.getBoundingClientRect();
+    const midX = currentElemPosX + rect.width / 2;
+    const midY = currentElemPosY + rect.height / 2;
 
-    const columns = document.querySelectorAll(".kanban-column");
-    const rectTask = currentDrag.taskElement.getBoundingClientRect();
-    const taskMidX = currentDrag.currentElemPosX + rectTask.width / 2;
-    const taskMidY = currentDrag.currentElemPosY + rectTask.height / 2;
+    const targetColumn = getColumnAtPosition(midX, midY);
+    if (placeholder.parentElement) {
+        placeholder.remove();
+    }
+    if (targetColumn) {
+        targetColumn.appendChild(taskElement);
+        Object.keys(taskList).forEach(category => {
+            taskList[category] = taskList[category].filter(t => t.id !== task.id);
+        });
+        const category = targetColumn.dataset.category;
+        taskList[category].push({
+            id: task.id,
+            text: task.text,
+        });
+        saveData();
+    }
 
-    columns.forEach(column => {
-        const rectCol = column.getBoundingClientRect();
-        const xStart = rectCol.x;
-        const yStart = rectCol.y;
-        const xEnd = rectCol.x + rectCol.width;
-        const yEnd = rectCol.y + rectCol.height;
-
-        if (taskMidX > xStart && taskMidX <= xEnd &&
-            taskMidY > yStart && taskMidY <= yEnd) {
-            column.appendChild(currentDrag.taskElement);
-            columns.forEach(cols => {
-                const columnType = cols.dataset.category;
-                const index = taskList[columnType].findIndex(t => t.id === currentDrag.task.id);
-                if (index > -1) {
-                    taskList[columnType].splice(index, 1);
-                }
-            });
-            const category = column.dataset.category;
-            taskList[category].push({
-                "id": currentDrag.task.id,
-                "text": currentDrag.task.text,
-            });
-            saveData();
-        }
-    });
-
-    currentDrag.taskElement.style.position = "";
-    currentDrag.taskElement.style.zIndex = "";
-    currentDrag.taskElement.style.left = "";
-    currentDrag.taskElement.style.top = "";
-    currentDrag.taskElement.style.width = "";
-    currentDrag.taskElement.style.height = "";
+    taskElement.style.position = "";
+    taskElement.style.zIndex = "";
+    taskElement.style.left = "";
+    taskElement.style.top = "";
+    taskElement.style.width = "";
+    taskElement.style.height = "";
 
     currentDrag = null;
-
 });
+
+
+
+function getColumnAtPosition(x, y) {
+    const columns = document.querySelectorAll(".kanban-column");
+    for (const column of columns) {
+        const rect = column.getBoundingClientRect();
+        if (
+            x > rect.left &&
+            x < rect.right &&
+            y > rect.top &&
+            y < rect.bottom
+        ) {
+            return column;
+        }
+    }
+    return null;
+}
+
+function getTaskIndexAtPosition(midY, column) {
+    const tasks = Array.from(column.querySelectorAll(".task:not(.dragging):not(.placeholder)"));
+
+    for (let i = 0; i < tasks.length; i++) {
+        const task = tasks[i];
+        const rect = task.getBoundingClientRect();
+        const taskMiddleY = rect.top + rect.height / 2;
+
+        if (midY < taskMiddleY) {
+            return i; // Before index
+        }
+    }
+
+    return null; // End of column
+
+}
