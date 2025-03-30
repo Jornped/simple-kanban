@@ -218,3 +218,13 @@ button {
     opacity: 0.6;
     transition: background 0.2s ease;
 }
+
+@media (max-width: 768px) {
+    .task.placeholder {
+        height: 64px;
+        margin-top: 12px;
+        margin-bottom: 12px;
+        opacity: 0.8;
+        border: 2px dashed rgba(255, 255, 255, 0.4);
+    }
+}
