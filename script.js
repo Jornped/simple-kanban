@@ -11,7 +11,7 @@ let taskList = {
     "Not Started": [
 
     ],
-    "In progress": [
+    "In Progress": [
 
     ],
     "Completed": [
@@ -130,8 +130,8 @@ function handleDeleteTask(task, taskElement) {
 
     if (index > -1) {
         taskList[columnType].splice(index, 1);
-        saveData();
     }
+    saveData();
     taskElement.remove();
 }
 

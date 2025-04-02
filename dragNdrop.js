@@ -1,6 +1,9 @@
 let currentDrag = null;
 let isDragging = false;
 
+const edgeThreshold = 50;
+const scrollSpeed = 10;
+
 const placeholder = document.createElement("div");
 placeholder.classList.add("task", "placeholder");
 
@@ -36,7 +39,8 @@ function dragNDropTask(task, taskElement) {
     });
 
     taskElement.addEventListener("touchstart", (event) => {
-        if (event.target.closest("button")) return;
+        if (event.target.closest("button"))
+            return;
 
         const { x, y } = getEventCoordinates(event);
 
@@ -54,10 +58,12 @@ function dragNDropTask(task, taskElement) {
             taskElement,
             startX: x,
             startY: y,
-            startElemPosX: rect.left,
-            startElemPosY: rect.top,
+            startElemPosX: rect.left + window.scrollX,
+            startElemPosY: rect.top + window.scrollY,
             currentElemPosX: rect.left,
             currentElemPosY: rect.top,
+            startScrollY: window.scrollY,
+            startScrollX: window.scrollX,
         };
 
         taskElement.style.left = `${rect.left}px`;
@@ -70,38 +76,31 @@ function dragNDropTask(task, taskElement) {
 }
 
 document.addEventListener("mousemove", (event) => {
-    if (!isDragging)
-        return
-    const {
-        startX,
-        startY,
-        taskElement
-    } = currentDrag;
+    if (!isDragging || !currentDrag)
+        return;
 
-    const offsetX = event.clientX - startX;
-    const offsetY = event.clientY - startY;
+    tryScrolling();
 
-    let taskTop = parseInt(taskElement.style.top, 10);
-    let taskLeft = parseInt(taskElement.style.left, 10);
+    const scrollOffsetY = window.scrollY - (currentDrag.startScrollY || 0);
+    const scrollOffsetX = window.scrollX - (currentDrag.startScrollX || 0);
 
-    taskTop += offsetY;
-    taskLeft += offsetX;
+    const offsetX = event.clientX - currentDrag.startX + scrollOffsetX;
+    const offsetY = event.clientY - currentDrag.startY + scrollOffsetY;
+
+    const taskLeft = currentDrag.startElemPosX + offsetX;
+    const taskTop = currentDrag.startElemPosY + offsetY;
 
     currentDrag.currentElemPosX = taskLeft;
     currentDrag.currentElemPosY = taskTop;
 
-    taskElement.style.left = `${taskLeft}px`;
-    taskElement.style.top = `${taskTop}px`;
+    currentDrag.taskElement.style.left = `${taskLeft}px`;
+    currentDrag.taskElement.style.top = `${taskTop}px`;
 
-    currentDrag.startX = event.clientX;
-    currentDrag.startY = event.clientY;
-
-    const rect = taskElement.getBoundingClientRect();
-    const midX = currentDrag.currentElemPosX + rect.width / 2;
-    const midY = currentDrag.currentElemPosY + rect.height / 2;
+    const rect = currentDrag.taskElement.getBoundingClientRect();
+    const midX = taskLeft + rect.width / 2;
+    const midY = taskTop + rect.height / 2;
 
     const targetColumn = getColumnAtPosition(midX, midY);
-
     if (targetColumn) {
         updatePlaceholderPosition(midY, targetColumn);
     }
@@ -109,11 +108,12 @@ document.addEventListener("mousemove", (event) => {
 });
 
 document.addEventListener("mouseup", (event) => {
-    if (!isDragging || !currentDrag) return;
+    if (!isDragging || !currentDrag)
+        return;
     event.preventDefault();
 
     handleDrop();
-});
+}, { passive: false });
 
 function getColumnAtPosition(x, y) {
     const columns = document.querySelectorAll(".kanban-column");
@@ -154,27 +154,28 @@ function getEventCoordinates(e) {
 }
 
 document.addEventListener("touchmove", (event) => {
-    if (!isDragging || !currentDrag) return;
+    if (!isDragging || !currentDrag)
+        return;
 
     const { x, y } = getEventCoordinates(event);
 
-    const offsetX = x - currentDrag.startX;
-    const offsetY = y - currentDrag.startY;
+    tryScrolling();
 
-    let taskTop = parseInt(currentDrag.taskElement.style.top, 10);
-    let taskLeft = parseInt(currentDrag.taskElement.style.left, 10);
+    const scrollOffsetY = window.scrollY - currentDrag.startScrollY;
+    const scrollOffsetX = window.scrollX - currentDrag.startScrollX;
 
-    taskTop += offsetY;
-    taskLeft += offsetX;
+    const offsetX = x - currentDrag.startX + scrollOffsetX;
+    const offsetY = y - currentDrag.startY + scrollOffsetY;
+
+
+    let taskLeft = currentDrag.startElemPosX + offsetX;
+    let taskTop = currentDrag.startElemPosY + offsetY;
 
     currentDrag.currentElemPosX = taskLeft;
     currentDrag.currentElemPosY = taskTop;
 
     currentDrag.taskElement.style.left = `${taskLeft}px`;
     currentDrag.taskElement.style.top = `${taskTop}px`;
-
-    currentDrag.startX = x;
-    currentDrag.startY = y;
 
     const rect = currentDrag.taskElement.getBoundingClientRect();
     const midX = currentDrag.currentElemPosX + rect.width / 2;
@@ -191,11 +192,12 @@ document.addEventListener("touchmove", (event) => {
 
 
 document.addEventListener("touchend", (event) => {
-    if (!isDragging || !currentDrag) return;
+    if (!isDragging || !currentDrag)
+        return;
     event.preventDefault();
 
     handleDrop();
-});
+}, { passive: false });
 
 
 function handleDrop() {
@@ -240,5 +242,20 @@ function updatePlaceholderPosition(midY, column) {
     } else {
         const tasks = column.querySelectorAll(".task:not(.dragging):not(.placeholder)");
         column.insertBefore(placeholder, tasks[index]);
+    }
+}
+
+function tryScrolling() {
+    const taskRect = currentDrag.taskElement.getBoundingClientRect();
+    const taskTop = taskRect.top;
+    const taskBottom = taskRect.bottom;
+
+    const scrollTop = window.scrollY;
+    const windowHeight = window.innerHeight;
+
+    if (taskTop < edgeThreshold) {
+        window.scrollTo({ top: scrollTop - scrollSpeed, behavior: "auto" });
+    } else if (taskBottom > windowHeight - edgeThreshold) {
+        window.scrollTo({ top: scrollTop + scrollSpeed, behavior: "auto" });
     }
 }
