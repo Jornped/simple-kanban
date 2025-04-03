@@ -98,7 +98,7 @@ function createTaskElement(task) {
     const taskText = document.createElement("p");
     taskText.textContent = task.text;
 
-    const editButton = createButton("edit-task-btn", "&#9999", () => handleEditTask(taskText));
+    const editButton = createButton("edit-task-btn", "<span class='tilted-pencil'>&#9999;</span>", () => handleEditTask(taskText));
     const deleteButton = createButton("delete-task-btn", "X", () => handleDeleteTask(task, taskElement));
 
     taskText.addEventListener("blur", () => handleUpdateTask(task, taskText));
