@@ -101,6 +101,10 @@ function createTaskElement(task) {
     const editButton = createButton("edit-task-btn", "<span class='tilted-pencil'>&#9999;</span>", () => handleEditTask(taskText));
     const deleteButton = createButton("delete-task-btn", "X", () => handleDeleteTask(task, taskElement));
 
+    const buttonContainer = document.createElement("div");
+    buttonContainer.classList.add("task-buttons");
+    buttonContainer.append(editButton, deleteButton);
+
     taskText.addEventListener("blur", () => handleUpdateTask(task, taskText));
     taskText.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
@@ -109,7 +113,7 @@ function createTaskElement(task) {
         }
     });
 
-    taskElement.append(taskText, editButton, deleteButton);
+    taskElement.append(taskText, buttonContainer);
 
     dragNDropTask(task, taskElement);
     return taskElement;
