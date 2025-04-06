@@ -2,7 +2,6 @@ const addButtonsList = document.querySelectorAll(".add-button");
 const addTaskWindow = document.querySelector(".modal-overlay");
 const saveTaskButton = addTaskWindow.querySelector(".save-task");
 const cancelButton = addTaskWindow.querySelector(".cancel-task");
-
 let parent = null;
 
 let id = 0;
@@ -65,12 +64,31 @@ saveTaskButton.addEventListener("click", () => {
 });
 
 addEventListener("DOMContentLoaded", () => {
+    const toggleButton = document.querySelector(".theme-switcher");
+    const icon = document.getElementById("theme-icon");
+
+    const applyTheme = (theme) => {
+        document.documentElement.setAttribute("data-theme", theme);
+        icon.textContent = theme === "light" ? "🌞" : "🌙";
+    };
+
+    const savedTheme = localStorage.getItem("theme") || "light";
+    applyTheme(savedTheme);
+
+    toggleButton.addEventListener("click", () => {
+        const currentTheme = document.documentElement.getAttribute("data-theme");
+        const newTheme = currentTheme === "dark" ? "light" : "dark";
+        applyTheme(newTheme);
+        localStorage.setItem("theme", newTheme);
+    });
+
     id = +localStorage.getItem("id") || 0;
     taskList = JSON.parse(localStorage.getItem("tasks")) || {
         "Not Started": [],
         "In Progress": [],
         "Completed": []
     };
+
     document.querySelectorAll(".kanban-column").forEach(column => {
         const category = column.dataset.category;
         column.appendChild(renderTasks(taskList[category]));
