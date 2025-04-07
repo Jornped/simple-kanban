@@ -9,70 +9,58 @@ placeholder.classList.add("task", "placeholder");
 
 function dragNDropTask(task, taskElement) {
 
-    taskElement.addEventListener("mousedown", (event) => {
-        if (event.target.closest("button"))
-            return;
-        taskElement.classList.add("dragging");
+    let dragTimeout = null;
 
-        const rect = taskElement.getBoundingClientRect();
-        taskElement.style.width = `${rect.width}px`;
-        taskElement.style.height = `${rect.height}px`;
-
-        taskElement.style.position = "absolute";
-        taskElement.style.zIndex = 1000;
-
-        currentDrag = {
-            task: task,
-            taskElement: taskElement,
-            startX: event.clientX,
-            startY: event.clientY,
-            startElemPosX: rect.left,
-            startElemPosY: rect.top,
-            currentElemPosX: rect.left,
-            currentElemPosY: rect.top,
-        }
-
-        taskElement.style.left = `${currentDrag.startElemPosX}px`;
-        taskElement.style.top = `${currentDrag.startElemPosY}px`;
-
-        isDragging = true;
-    });
-
-    taskElement.addEventListener("touchstart", (event) => {
+    taskElement.addEventListener("pointerdown", (event) => {
         if (event.target.closest("button"))
             return;
 
+        const isTouch = event.pointerType === "touch";
         const { x, y } = getEventCoordinates(event);
 
-        taskElement.classList.add("dragging");
+        const startDrag = () => {
+            taskElement.classList.add("dragging");
 
-        const rect = taskElement.getBoundingClientRect();
-        taskElement.style.width = `${rect.width}px`;
-        taskElement.style.height = `${rect.height}px`;
+            const rect = taskElement.getBoundingClientRect();
+            taskElement.style.width = `${rect.width}px`;
+            taskElement.style.height = `${rect.height}px`;
 
-        taskElement.style.position = "absolute";
-        taskElement.style.zIndex = 1000;
+            taskElement.style.position = "absolute";
+            taskElement.style.zIndex = 1000;
 
-        currentDrag = {
-            task,
-            taskElement,
-            startX: x,
-            startY: y,
-            startElemPosX: rect.left + window.scrollX,
-            startElemPosY: rect.top + window.scrollY,
-            currentElemPosX: rect.left,
-            currentElemPosY: rect.top,
-            startScrollY: window.scrollY,
-            startScrollX: window.scrollX,
+            currentDrag = {
+                task,
+                taskElement,
+                startX: x,
+                startY: y,
+                startElemPosX: rect.left + window.scrollX,
+                startElemPosY: rect.top + window.scrollY,
+                currentElemPosX: rect.left,
+                currentElemPosY: rect.top,
+                startScrollY: window.scrollY,
+                startScrollX: window.scrollX,
+            };
+
+            taskElement.style.left = `${currentDrag.startElemPosX}px`;
+            taskElement.style.top = `${currentDrag.startElemPosY}px`;
+
+            isDragging = true;
         };
 
-        taskElement.style.left = `${rect.left}px`;
-        taskElement.style.top = `${rect.top}px`;
+        if (isTouch) {
+            dragTimeout = setTimeout(() => {
+                startDrag();
+            }, 200);
 
-        isDragging = true;
+            const cancel = () => clearTimeout(dragTimeout);
 
-        event.preventDefault();
-    }, { passive: false });
+            taskElement.addEventListener("pointerup", cancel, { once: true });
+            taskElement.addEventListener("pointercancel", cancel, { once: true });
+            taskElement.addEventListener("pointermove", cancel, { once: true });
+        } else {
+            startDrag();
+        }
+    });
 }
 
 document.addEventListener("mousemove", (event) => {
