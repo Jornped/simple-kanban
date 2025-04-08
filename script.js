@@ -103,6 +103,12 @@ function saveData() {
 
 function renderTasks(tasks) {
     const fragment = document.createDocumentFragment();
+
+    if (!Array.isArray(tasks)) {
+        console.warn("Expected tasks to be array, got:", tasks);
+        return fragment;
+    }
+
     tasks.forEach(task => {
         fragment.appendChild(createTaskElement(task));
     });

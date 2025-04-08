@@ -32,10 +32,20 @@ importInput.addEventListener("change", (event) => {
     reader.onload = (e) => {
         try {
             const data = JSON.parse(e.target.result);
-            if (!data.tasks || typeof data.id !== "number") {
+            const isValidStructure = data &&
+                typeof data === "object" &&
+                typeof data.id === "number" &&
+                data.tasks &&
+                typeof data.tasks === "object" &&
+                Array.isArray(data.tasks["Not Started"]) &&
+                Array.isArray(data.tasks["In Progress"]) &&
+                Array.isArray(data.tasks["Completed"]);
+
+            if (!isValidStructure) {
                 alert("Invalid JSON structure.");
                 return;
             }
+
 
             id = data.id;
             taskList = data.tasks;
