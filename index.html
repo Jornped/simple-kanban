@@ -7,9 +7,6 @@
     <link rel="stylesheet" href="./style.css">
     <title>Study</title>
 </head>
-<!-- <header>
-    < TODO: Кнопка настроек, Импорта/экспорта данных в Json и смена темы 
-</header> -->
 <header>
     <div class="theme-switcher">
         <button id="theme-toggle">
@@ -18,6 +15,11 @@
             </span>
         </button>
     </div>
+    <div class="json-buttons">
+        <button id="export-json">Export JSON</button>
+        <button id="import-json">Import JSON</button>
+        <input type="file" id="import-input" accept=".json" style="display: none;" />
+    </div>  
 </header>
 
 <body>
@@ -45,8 +47,9 @@
             </div>
         </div>
     </div>
-    <script src="./dragNdrop.js"></script>
     <script src="./script.js"></script>
+    <script src="./dragNdrop.js"></script>
+    <script src="./jsonHandler.js"></script>
 </body>
 
 </html>

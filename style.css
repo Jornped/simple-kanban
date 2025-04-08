@@ -293,11 +293,16 @@ h2 {
 }
 
 
+header {
+    display: flex;
+    width: 100%;
+    padding: 1rem;
+}
+
 .theme-switcher {
     display: flex;
     justify-content: flex-end;
     padding: 1rem;
-
     width: fit-content;
     margin-left: auto;
 }
@@ -314,6 +319,32 @@ h2 {
 .theme-switcher button:hover {
     transform: scale(1.2);
 }
+
+.json-buttons {
+    display: flex;
+    gap: 8px;
+    margin: 12px 0;
+}
+
+.json-buttons button {
+    padding: 8px 16px;
+    background-color: var(--button-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.json-buttons button:hover {
+    background-color: var(--button-hover);
+}
+
+.json-buttons button:active {
+    transform: scale(0.97);
+}
+
 
 @media (max-width: 768px) {
     .kanban-table {
