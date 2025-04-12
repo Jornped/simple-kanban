@@ -198,15 +198,16 @@ function handleDrop() {
 
     const targetColumn = getColumnAtPosition(midX, midY);
     if (placeholder.parentElement) {
+        placeholder.parentElement.insertBefore(taskElement, placeholder);
         placeholder.remove();
     }
     if (targetColumn) {
-        targetColumn.appendChild(taskElement);
         Object.keys(taskList).forEach(category => {
             taskList[category] = taskList[category].filter(t => t.id !== task.id);
         });
         const category = targetColumn.dataset.category;
-        taskList[category].push({
+        const index = Array.from(targetColumn.querySelectorAll(".task")).indexOf(taskElement);
+        taskList[category].splice(index, 0, {
             id: task.id,
             text: task.text,
         });
