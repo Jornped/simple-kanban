@@ -1,3 +1,5 @@
+import { getTaskList, setTaskList, saveData } from "./storage.js";
+
 let currentDrag = null;
 let isDragging = false;
 
@@ -7,7 +9,7 @@ const scrollSpeed = 10;
 const placeholder = document.createElement("div");
 placeholder.classList.add("task", "placeholder");
 
-function dragNDropTask(task, taskElement) {
+export function dragNDropTask(task, taskElement) {
 
     let dragTimeout = null;
 
@@ -201,6 +203,7 @@ function handleDrop() {
         placeholder.parentElement.insertBefore(taskElement, placeholder);
         placeholder.remove();
     }
+    const taskList = getTaskList();
     if (targetColumn) {
         Object.keys(taskList).forEach(category => {
             taskList[category] = taskList[category].filter(t => t.id !== task.id);
@@ -211,6 +214,7 @@ function handleDrop() {
             id: task.id,
             text: task.text,
         });
+        setTaskList(taskList);
         saveData();
     }
 
