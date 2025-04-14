@@ -5,20 +5,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./style.css">
-    <title>Study</title>
+    <title>Kanban Desk</title>
 </head>
 <header>
+    <div class="json-buttons">
+        <button id="export-json">Export JSON</button>
+        <button id="import-json">Import JSON</button>
+        <input type="file" id="import-input" accept=".json" style="display: none;" />
+    </div>
     <div class="theme-switcher">
         <button id="theme-toggle">
             <span id="theme-icon">
                 🌙
             </span>
         </button>
-    </div>
-    <div class="json-buttons">
-        <button id="export-json">Export JSON</button>
-        <button id="import-json">Import JSON</button>
-        <input type="file" id="import-input" accept=".json" style="display: none;" />
     </div>
 </header>
 
