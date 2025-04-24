@@ -1,5 +1,6 @@
 import { renderTasks } from "./tasks.js";
-import { getId, getTaskList, setId, setTaskList, saveData } from "./storage.js";
+import { getId, getTaskList, setId, setTaskList, saveData, getTaskOrder, setTaskOrder } from "./storage.js";
+import { renderColumns, clearColumns } from "./columns.js";
 
 export function initJsonHandling() {
     const exportButton = document.getElementById("export-json");
@@ -10,6 +11,7 @@ export function initJsonHandling() {
         const data = {
             id: getId(),
             tasks: getTaskList(),
+            order: getTaskOrder(),
         };
         const json = JSON.stringify(data, null, 2);
         const blob = new Blob([json], { type: "application/json" });
@@ -31,7 +33,6 @@ export function initJsonHandling() {
         const file = event.target.files[0];
         if (!file)
             return;
-
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
@@ -39,31 +40,36 @@ export function initJsonHandling() {
                 const isValidStructure = data &&
                     typeof data === "object" &&
                     typeof data.id === "number" &&
-                    data.tasks &&
-                    typeof data.tasks === "object" &&
-                    Array.isArray(data.tasks["Not Started"]) &&
-                    Array.isArray(data.tasks["In Progress"]) &&
-                    Array.isArray(data.tasks["Completed"]);
+                    data.tasks && typeof data.tasks === "object" &&
+                    Array.isArray(data.order);
+
                 if (!isValidStructure) {
                     alert("Invalid JSON structure.");
                     return;
                 }
-
                 setId(data.id);
                 setTaskList(data.tasks);
-                const taskList = getTaskList();
+                console.log(data.order);
+                setTaskOrder(data.order);
                 saveData();
-                document.querySelectorAll(".kanban-column").forEach(column => {
-                    const category = column.dataset.category;
-                    Array.from(column.children).forEach(child => {
-                        if (!child.classList.contains("add-button") && child.tagName !== "H2") {
-                            child.remove();
-                        }
-                    });
 
-                    column.appendChild(renderTasks(taskList[category]));
+                clearColumns();
+                renderColumns();
+
+                const taskList = getTaskList();
+                const taskOrder = getTaskOrder();
+
+                taskOrder.forEach(category => {
+                    const column = document.querySelector(`.kanban-column[data-category="${category}"]`);
+                    if (column) {
+                        Array.from(column.children).forEach(child => {
+                            if (!child.classList.contains("add-button") && child.tagName !== "H2") {
+                                child.remove();
+                            }
+                        });
+                        column.appendChild(renderTasks(taskList[category] || []));
+                    }
                 });
-
 
             } catch (err) {
                 alert("Failed to import JSON");

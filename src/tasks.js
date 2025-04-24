@@ -1,4 +1,4 @@
-import { getTaskList } from './storage.js'
+import { getTaskList } from './storage.js';
 import { dragNDropTask } from "./dragNdrop.js";
 import { setTaskList, saveData } from './storage.js';
 

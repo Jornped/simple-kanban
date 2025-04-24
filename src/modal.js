@@ -1,19 +1,17 @@
 import { getId, setId, getTaskList, setTaskList, saveData } from "./storage.js"
 import { createTaskElement } from "./tasks.js";
 export function modalInit() {
-
-    const addButtonsList = document.querySelectorAll(".add-button");
     const addTaskWindow = document.querySelector(".modal-overlay");
     const saveTaskButton = addTaskWindow.querySelector(".save-task");
     const cancelButton = addTaskWindow.querySelector(".cancel-task");
 
     let parent = null;
 
-    addButtonsList.forEach(button => {
-        button.addEventListener("click", () => {
+    document.querySelector(".kanban-table").addEventListener("click", (e) => {
+        if (e.target.classList.contains("add-button")) {
             addTaskWindow.style.display = "flex";
-            parent = button.parentElement;
-        });
+            parent = e.target.parentElement;
+        }
     });
 
     cancelButton.addEventListener("click", () => {
