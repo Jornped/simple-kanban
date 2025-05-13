@@ -7,8 +7,7 @@ export function getId() {
 export function setId(id) {
     _id = id;
 }
-// TODO: В таком варианте порядок не сохраняется
-// Лучше вынести названия в отдельный массив
+
 let _taskOrder = ["Not Started", "In Progress", "Completed"];
 let _tasks = {
     "Not Started": [
